@@ -10,20 +10,21 @@ import SwiftUI
 struct ContentView: View {
 
     @State private var count = 0
-    @State private var machineCount = 0
+    @State private var machineCount:Int = 0
     @State private var demand = 1
     @State private var price = 1
-    @State private var money = 1000
-    @State var seconds = 1
-    @State private var machinePrice = 50
-    @State private var totalClips = 0
+    @State private var money = 100
+    @State var seconds = 10
+    @State private var machinePrice:Int = 50
+    @State private var totalClips:Int = 0
     @State private var marketingLevel = 0
     @State private var marketingPrice = 100
+    @State private var clipsPM = 0
+    
     
     //Sales function
     func sales(){
         Timer.scheduledTimer(withTimeInterval: 0.2, repeats: true){ timer in seconds -= 1
-            
             let randomChance = Int.random(in: 0...self.demand)
             
             if randomChance < 1 {
@@ -43,73 +44,123 @@ struct ContentView: View {
      }
     }
     
+    func cpm(){
+        let currentClip = totalClips
+        Timer.scheduledTimer(withTimeInterval: 2, repeats: false){ timer in seconds -= 1
+            let clipsPerMinute = (totalClips - currentClip)*30
+            clipsPM = clipsPerMinute
+            cpm()
+     }
+    }
+    
+    
+    
     //Actual View start
     var body: some View {
-        VStack(alignment: .center){
+        VStack{
+            VStack{
+            HStack{
             Text("Total Clips: \(totalClips)")
                 .font(.title)
-            Spacer()
+                .fontWeight(.bold)
+                .foregroundColor(.white)
+            }.padding(.bottom, 5)
+                HStack{
+                    Text("Clips/minute: \(clipsPM)")
+                        .font(.title)
+                        .fontWeight(.bold)
+                        .foregroundColor(.white)
+                }
+            }.padding(.bottom, 20)
+            
+            
+            
             ///Money
             HStack{
+                Spacer()
                 Text("Money: $")
                     .font(.title)
                     .fontWeight(.bold)
+                    .foregroundColor(.white)
+                Spacer()
                 Text(String(money))
                     .font(.title)
+                    .foregroundColor(.white)
+                Spacer()
             }
             //Stock Amt
             HStack{
+                Spacer()
                 Text("Stock:")
                     .font(.title)
                     .fontWeight(.bold).padding()
+                    .foregroundColor(.white)
+                Spacer()
                 Text("\(count)").font(.title)
+                    .foregroundColor(.white)
+                Spacer()
             }
             //Paperclip machines/Price/Marketing
             VStack{
-            Spacer()
             HStack{
-                Spacer()
+
                 Text("Price:")
-                Spacer()
+                    .foregroundColor(.white)
                 Text("$ " + String(self.price))
-                Spacer()
-            }
-          
+                    .foregroundColor(.white)
+
+            }.padding()
                 HStack{
-                    Spacer()
-                    Text("Paperclip Machine:").padding()
+                    Text("Paperclip Machines:")
+                        .font(.title3)
+                        .fontWeight(.light)
+                        .foregroundColor(.white)
                     Text("\(machineCount)")
+                        .font(.title3)
+                        .fontWeight(.light)
+                        .foregroundColor(.white)
+                    Spacer()
                     Button(action: {
-                        if (self.money - self.machinePrice) > 0 {
+                        if (self.money - self.machinePrice) >= 0 {
                             self.money = self.money - self.machinePrice
                             self.machineCount += 1
+                            machinePrice = machinePrice + 2
                             machine()
                         }
                     }) {
-                        Spacer()
                         Text("Buy $" + String(self.machinePrice))
-                        Spacer()
+                            .font(.title3)
                     }
-                }
+                }.padding()
                 HStack{
-                    Spacer()
-                    Text("Marketing Level: ")
+                    Text("Marketing Employees: ")
+                        .font(.title3)
+                        .fontWeight(.light)
+                        .foregroundColor(.white)
                     Text(String(self.marketingLevel))
+                        .font(.title3)
+                        .fontWeight(.light)
+                        .foregroundColor(.white)
                     Spacer()
                     Button(action: {
-                        if (self.money - 100 > 0){
+                        if (self.money - 100 >= 0){
                             self.sales()
                             self.marketingLevel += 1
+                            marketingPrice += 10
                             self.money -= 100
                         }
                     }) {
-                        Spacer()
-                        Text("Hire Marketing")
-                        Spacer()
+                        Text("Hire $\(marketingPrice)")
+                            .font(.title3)
                     }
-                }
-                Spacer()
+                }.padding()
             }
+            
+            HStack{
+                ForEach(0..<machineCount){item in
+                    Image(systemName: "faxmachine")
+                }
+                    }
             
   
             
@@ -143,17 +194,20 @@ struct ContentView: View {
                     self.count += 1
                     self.totalClips += 1
             }) {
-                    Text("Buy Paperclip")
-             }
-            Button (action: self.sales, label: {
-                /*@START_MENU_TOKEN@*/Text("Button")/*@END_MENU_TOKEN@*/
-            })
+                    Text("Make Paperclip")
+                        .font(.title)
+                        .fontWeight(.bold)
+                        .foregroundColor(.white)
+            }.padding()
             }
+        }.onAppear {
+            self.sales()
+            self.cpm()
         }
-       
-       
+        .background(Image("MetalBG").resizable().scaledToFill().ignoresSafeArea())
+        }
     }
-}
+
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
